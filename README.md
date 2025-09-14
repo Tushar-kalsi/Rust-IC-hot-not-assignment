@@ -126,25 +126,6 @@ make stop          # Stop the local DFX replica
 make clean         # Clean build artifacts and local state
 ```
 
-### Testnet Deployment
-
-```bash
-# Cycles Management
-make check-cycles-testnet    # Check your cycles balance on testnet
-make get-free-cycles        # Get instructions for free cycles from faucet
-
-# Deployment
-make create-testnet-canister # Create canister on testnet only
-make deploy-testnet         # Deploy to existing testnet canister
-make deploy-testnet-full    # Complete testnet deployment (create + deploy)
-
-# Testing
-make test-api-testnet       # Test API on testnet with auto canister ID detection
-
-# Utilities
-make get-testnet-canister-id # Get your testnet canister ID
-make get-testnet-url        # Get Candid UI URL for testnet canister
-```
 
 ### Mainnet Deployment
 
@@ -176,20 +157,11 @@ make clean
 #### Testnet Deployment Workflow
 
 ```bash
-# Check if you have cycles
-make check-cycles-testnet
-
-# Get free cycles if needed (visit faucet)
-make get-free-cycles
-
-# Deploy to testnet
-make deploy-testnet-full
+# Deploy to testnet (requires cycles from faucet)
+make setup-testnet
 
 # Test your deployment
 make test-api-testnet
-
-# Get your canister URLs
-make get-testnet-url
 ```
 
 #### Mainnet Deployment Workflow
@@ -240,16 +212,12 @@ The project is configured to deploy to IC Playground (testnet) at `https://icp0.
 ### Prerequisites for Testnet Deployment
 
 1. **Get Free Cycles**: Visit [DFINITY Faucet](https://faucet.dfinity.org/) to get free cycles for testing
-2. **Check Balance**: Run `make check-cycles-testnet` to verify you have cycles
 
 ### Deployment Process
 
 ```bash
-# First-time deployment
-make deploy-testnet-full
-
-# Get your canister URLs
-make get-testnet-url
+# Complete testnet deployment
+make setup-testnet
 ```
 
 ### Testing Your Deployed Canister
@@ -257,20 +225,13 @@ make get-testnet-url
 ```bash
 # Test API endpoints (automatically detects your canister ID)
 make test-api-testnet
-
-# Manual testing with specific canister ID
-CANISTER_ID=$(dfx canister id todo_ic_backend --network playground)
-dfx canister call $CANISTER_ID add_todo '(record { text = "Test from CLI" })' --network playground
-dfx canister call $CANISTER_ID get_all_todos '(record { offset = 0; limit = 10 })' --network playground
 ```
 
 ### Accessing Your Testnet Canister
 
-After deployment, your canister will be available at:
+After deployment with `make setup-testnet`, your canister URLs will be displayed in the output:
 - **Direct URL**: `https://<canister-id>.icp0.io`
 - **Candid UI**: `https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=<canister-id>`
-
-Use `make get-testnet-url` to get the exact URLs for your deployment.
 
 ## Mainnet Deployment
 
