@@ -90,8 +90,50 @@ todo_ic/
 | `delete_todo(TodoId)` | Update | Delete a todo item |
 | `get_todo_count()` | Query | Get total number of todos |
 
+## Setup and Usage
 
+1. **Prerequisites**:
+   ```bash
+   # Install DFX
+   sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
 
+   # Install Rust
+   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+   rustup target add wasm32-unknown-unknown
+   ```
+
+2. **Local Development**:
+   ```bash
+   # Complete local setup (stop, start, create, build, deploy)
+   make setup-local
+   ```
+
+3. **Test API Commands**:
+   ```bash
+   # Add a todo
+   dfx canister call todo_ic_backend add_todo '(record { text = "Learn IC development" })'
+
+   # Get a specific todo by ID
+   dfx canister call todo_ic_backend get_todo '(1)'
+
+   # Get all todos with pagination
+   dfx canister call todo_ic_backend get_all_todos '(record { offset = 0; limit = 10 })'
+
+   # Update todo text
+   dfx canister call todo_ic_backend update_todo_text '(1, "Updated todo text")'
+
+   # Mark todo as completed
+   dfx canister call todo_ic_backend update_todo_completed '(1, true)'
+
+   # Get total todo count
+   dfx canister call todo_ic_backend get_todo_count '()'
+
+   # Delete a todo
+   dfx canister call todo_ic_backend delete_todo '(1)'
+
+   # Test all endpoints with make command
+   make test-api
+   ```
 
 ## Features
 
