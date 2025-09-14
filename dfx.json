@@ -22,6 +22,12 @@
       "packtool": ""
     }
   },
+  "networks": {
+    "playground": {
+      "providers": ["https://playground.dfinity.network"],
+      "type": "persistent"
+    }
+  },
   "output_env_file": ".env",
   "version": 1
 }
