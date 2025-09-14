@@ -5,7 +5,7 @@ A simple todo list canister for the Internet Computer built with Rust.
 ## Quick Start
 
 ### Local Development
-Get your local development environment ready with one command:
+Get the local development environment ready with one command:
 
 ```bash
 make setup-local
@@ -26,14 +26,12 @@ make setup-testnet
 ```
 
 This command will:
-1. Check your cycles balance
+1. Checks cycles balance
 2. Create testnet canister
 3. Build the backend
 4. Deploy to testnet
 
-**Note:** You need cycles from the [DFINITY faucet](https://faucet.dfinity.org/) before running testnet setup.
-
-Your canister will be ready for testing with API endpoints available!
+Canister will be ready for testing with API endpoints available!
 
 ## Project Structure
 
@@ -92,155 +90,8 @@ todo_ic/
 | `delete_todo(TodoId)` | Update | Delete a todo item |
 | `get_todo_count()` | Query | Get total number of todos |
 
-## Makefile Commands
-
-The project includes a comprehensive Makefile with the following commands:
-
-### Development Commands
-
-```bash
-make help               # Show all available commands
-
-# Backend
-make build-backend     # Build the backend canister
-make test              # Run all Rust tests
-make lint              # Run Clippy linter for code quality
-make fmt               # Format code using rustfmt
-
-# Frontend
-make build-frontend    # Build the Leptos frontend
-make serve-frontend    # Start frontend development server
-make install-frontend-deps # Install trunk and wasm target
-
-# Combined
-make build             # Build both backend and frontend
-```
-
-### Local Development
-
-```bash
-make start         # Start DFX replica in background
-make deploy        # Build and deploy canister locally
-make test-api      # Test API endpoints with sample data
-make stop          # Stop the local DFX replica
-make clean         # Clean build artifacts and local state
-```
 
 
-### Mainnet Deployment
-
-```bash
-make deploy-mainnet         # Deploy to Internet Computer mainnet
-make deploy-mainnet-cycles  # Deploy to mainnet with cycles (interactive)
-```
-
-### Example Workflows
-
-#### Local Development Workflow
-
-```bash
-# Start development
-make start
-make deploy
-
-# Test the API
-make test-api
-
-# Run tests
-make test
-
-# Clean up
-make stop
-make clean
-```
-
-#### Testnet Deployment Workflow
-
-```bash
-# Deploy to testnet (requires cycles from faucet)
-make setup-testnet
-
-# Test your deployment
-make test-api-testnet
-```
-
-#### Mainnet Deployment Workflow
-
-```bash
-# Deploy to mainnet (requires real ICP/cycles)
-make deploy-mainnet-cycles
-```
-
-## Setup and Usage
-
-1. **Prerequisites**:
-   ```bash
-   # Install DFX
-   sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
-
-   # Install Rust
-   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-   rustup target add wasm32-unknown-unknown
-   ```
-
-2. **Local Development**:
-   ```bash
-   # Start backend
-   make start
-   make deploy
-
-   # Start frontend (in another terminal)
-   make serve-frontend
-   ```
-
-3. **Test the API**:
-   ```bash
-   # Add a todo
-   dfx canister call todo_ic_backend add_todo '(record { text = "Learn IC development" })'
-
-   # Get all todos
-   dfx canister call todo_ic_backend get_all_todos '(record { offset = 0; limit = 10 })'
-
-   # Update completion status
-   dfx canister call todo_ic_backend update_todo_completed '(1, true)'
-   ```
-
-## Testnet Deployment
-
-The project is configured to deploy to IC Playground (testnet) at `https://icp0.io`.
-
-### Prerequisites for Testnet Deployment
-
-1. **Get Free Cycles**: Visit [DFINITY Faucet](https://faucet.dfinity.org/) to get free cycles for testing
-
-### Deployment Process
-
-```bash
-# Complete testnet deployment
-make setup-testnet
-```
-
-### Testing Your Deployed Canister
-
-```bash
-# Test API endpoints (automatically detects your canister ID)
-make test-api-testnet
-```
-
-### Accessing Your Testnet Canister
-
-After deployment with `make setup-testnet`, your canister URLs will be displayed in the output:
-- **Direct URL**: `https://<canister-id>.icp0.io`
-- **Candid UI**: `https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=<canister-id>`
-
-## Mainnet Deployment
-
-**Mainnet Principal ID**: `vyggl-hpuoy-22jqe-6povn-6glf6-z2rle-wgphx-nyv6a-xbomq-e6knd-iae`
-
-To deploy to mainnet:
-1. Fund the principal with ICP tokens
-2. Convert ICP to cycles: `dfx cycles convert <amount>`
-3. Deploy: `make deploy-mainnet`
 
 ## Features
 
