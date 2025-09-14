@@ -1,0 +1,21 @@
+[build]
+target = "index.html"
+dist = "dist"
+
+[watch]
+ignore = ["dist"]
+
+[serve]
+address = "127.0.0.1"
+port = 8080
+open = false
+
+[[hooks]]
+stage = "pre_build"
+command = "echo"
+command_arguments = ["Building Todo IC Frontend with Leptos..."]
+
+[[hooks]]
+stage = "post_build"
+command = "echo"
+command_arguments = ["Frontend build completed!"]

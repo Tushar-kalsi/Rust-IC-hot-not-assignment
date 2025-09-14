@@ -35,6 +35,18 @@ todo_ic/
 - **service.rs**: Business logic layer with validation functions and CRUD operations
 - **todo_ic_backend.did**: Candid interface definition for external API interaction
 
+#### Frontend (`src/todo_ic_frontend/`)
+
+- **lib.rs**: Main library entry point with WASM hydration setup
+- **app.rs**: Root Leptos component with overall app structure
+- **components/**: Modular UI components
+  - **todo_form.rs**: Add new todo form with validation
+  - **todo_list.rs**: Display and manage existing todos
+  - **network_selector.rs**: Network switcher (Local/Testnet/Mainnet)
+- **ic_client.rs**: Internet Computer client for API communication
+- **types.rs**: Shared type definitions matching backend types
+- **style/main.css**: Colorful responsive CSS styling
+
 ## API Endpoints
 
 | Method | Type | Description |
@@ -54,11 +66,21 @@ The project includes a Makefile with the following commands:
 ### Development Commands
 
 ```bash
-make help          # Show available commands
-make build         # Build the backend canister
-make test          # Run all Rust tests
-make lint          # Run Clippy linter for code quality
-make fmt           # Format code using rustfmt
+make help               # Show available commands
+
+# Backend
+make build-backend     # Build the backend canister
+make test              # Run all Rust tests
+make lint              # Run Clippy linter for code quality
+make fmt               # Format code using rustfmt
+
+# Frontend
+make build-frontend    # Build the Leptos frontend
+make serve-frontend    # Start frontend development server
+make install-frontend-deps # Install trunk and wasm target
+
+# Combined
+make build             # Build both backend and frontend
 ```
 
 ### Local Development
@@ -109,8 +131,12 @@ make clean
 
 2. **Local Development**:
    ```bash
+   # Start backend
    make start
    make deploy
+
+   # Start frontend (in another terminal)
+   make serve-frontend
    ```
 
 3. **Test the API**:
@@ -156,12 +182,22 @@ To deploy to mainnet:
 
 ## Features
 
+### Backend Features
 - **Persistent Storage**: Uses `StableBTreeMap` for upgrade-safe data persistence
 - **Pagination**: Efficient handling of large todo lists
 - **Input Validation**: Comprehensive validation with proper error handling
 - **Timestamps**: Automatic creation and update timestamps
 - **Type Safety**: Full Rust type system with Candid integration
 - **Comprehensive Testing**: Full test coverage for all CRUD operations
+
+### Frontend Features
+- **🚀 Modern UI**: Built with Leptos (Rust WASM framework)
+- **🌐 Network Switching**: Toggle between Local/Testnet/Mainnet
+- **🎨 Colorful Design**: Responsive design with gradient backgrounds and animations
+- **⚡ Real-time Updates**: Reactive UI with immediate feedback
+- **📱 Mobile Friendly**: Responsive design works on all devices
+- **🔄 Loading States**: Visual feedback for all async operations
+- **❌ Error Handling**: User-friendly error messages and recovery
 
 ## Technical Details
 
