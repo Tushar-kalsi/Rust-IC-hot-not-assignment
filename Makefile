@@ -8,16 +8,25 @@ help:
 	@echo "Backend:"
 	@echo "  make build-backend"
 	@echo "  make test"
-	@echo "  make deploy"
+	@echo "  make deploy (local)"
 	@echo "  make deploy-testnet"
+	@echo "  make deploy-testnet-full (create + deploy)"
 	@echo "  make deploy-mainnet"
+	@echo "  make create-testnet-canister"
+	@echo "  make get-testnet-canister-id"
+	@echo "  make get-testnet-url"
 	@echo "Frontend:"
 	@echo "  make build-frontend"
 	@echo "  make serve-frontend"
 	@echo "  make install-frontend-deps"
+	@echo "Testing:"
+	@echo "  make test-api (local)"
+	@echo "  make test-api-testnet"
 	@echo "General:"
 	@echo "  make build (builds both)"
 	@echo "  make clean"
+	@echo "  make start (start local replica)"
+	@echo "  make stop (stop local replica)"
 
 build: build-backend build-frontend
 
@@ -59,20 +68,72 @@ stop:
 deploy: build-backend
 	@dfx deploy todo_ic_backend
 
+check-cycles-testnet:
+	@echo "Checking cycles balance on testnet..."
+	@dfx cycles balance --network playground
+
+get-free-cycles:
+	@echo "Getting free cycles from DFINITY faucet..."
+	@echo "Visit: https://faucet.dfinity.org/"
+	@echo "Or run: dfx cycles convert --amount=0.1 --network playground"
+
+create-testnet-canister:
+	@echo "Creating canister on testnet..."
+	@echo "Checking cycles first..."
+	@dfx cycles balance --network playground || echo "No cycles found"
+	@dfx canister create todo_ic_backend --network playground
+
 deploy-testnet: build-backend
+	@echo "Deploying to testnet (playground)..."
 	@dfx deploy todo_ic_backend --network playground
+	@echo "Backend deployed to testnet!"
+	@echo "Getting canister ID..."
+	@dfx canister id todo_ic_backend --network playground
+
+deploy-testnet-full: create-testnet-canister deploy-testnet
+	@echo "Full testnet deployment completed!"
 
 deploy-mainnet: build-backend
+	@echo "Deploying to mainnet..."
 	@dfx deploy todo_ic_backend --network ic
+	@echo "Backend deployed to mainnet!"
+
+deploy-mainnet-cycles: build-backend
+	@echo "Deploying to mainnet with cycles..."
+	@echo "WARNING: This will deploy to the live Internet Computer mainnet and consume cycles!"
+	@read -p "Are you sure you want to continue? (y/N): " confirm && [ "$$confirm" = "y" ] || exit 1
+	@dfx deploy todo_ic_backend --network ic --with-cycles 1000000000000
+	@echo "Backend deployed to mainnet with cycles!"
+	@dfx canister id todo_ic_backend --network ic
 
 test-api:
 	@dfx canister call todo_ic_backend add_todo '(record { text = "Test todo" })'
 	@dfx canister call todo_ic_backend get_all_todos '(record { offset = 0; limit = 10 })'
 
 test-api-testnet:
-	@dfx canister call 25x2w-paaaa-aaaab-qackq-cai add_todo '(record { text = "Test from Makefile" })' --network playground
-	@dfx canister call 25x2w-paaaa-aaaab-qackq-cai get_all_todos '(record { offset = 0; limit = 10 })' --network playground
-	@dfx canister call 25x2w-paaaa-aaaab-qackq-cai get_todo_count '()' --network playground
+	@echo "Testing API on testnet..."
+	@CANISTER_ID=$$(dfx canister id todo_ic_backend --network playground 2>/dev/null || echo ""); \
+	if [ -z "$$CANISTER_ID" ]; then \
+		echo "Error: Canister not found on testnet. Run 'make deploy-testnet-full' first."; \
+		exit 1; \
+	fi; \
+	echo "Using canister ID: $$CANISTER_ID"; \
+	dfx canister call $$CANISTER_ID add_todo '(record { text = "Test from Makefile" })' --network playground; \
+	dfx canister call $$CANISTER_ID get_all_todos '(record { offset = 0; limit = 10 })' --network playground; \
+	dfx canister call $$CANISTER_ID get_todo_count '()' --network playground
+
+get-testnet-canister-id:
+	@dfx canister id todo_ic_backend --network playground
+
+get-testnet-url:
+	@echo "Testnet Candid UI URL:"
+	@CANISTER_ID=$$(dfx canister id todo_ic_backend --network playground 2>/dev/null || echo ""); \
+	if [ -z "$$CANISTER_ID" ]; then \
+		echo "Error: Canister not found on testnet. Deploy first."; \
+	else \
+		echo "https://$$CANISTER_ID.icp0.io"; \
+		echo "Candid UI: https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=$$CANISTER_ID"; \
+	fi
 
 clean:
 	@echo "Cleaning backend..."
