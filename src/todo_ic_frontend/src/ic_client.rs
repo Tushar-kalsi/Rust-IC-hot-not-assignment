@@ -1,134 +1,132 @@
 use crate::types::*;
-use ic_agent::{Agent, Identity};
-use candid::{encode_args, decode_args, Principal};
-use wasm_bindgen_futures::JsFuture;
 use web_sys::console;
 use leptos::*;
+use web_sys::{window, Storage};
+use serde_json;
 
 pub struct IcClient {
-    agent: Agent,
-    canister_id: Principal,
     network: Network,
+    storage: Storage,
 }
 
 impl IcClient {
     pub async fn new(network: Network) -> Result<Self, String> {
-        let url = network.get_url();
-        let canister_id_str = network.get_canister_id();
+        console::log_1(&format!("Connecting to {} (using local storage mock)", network.display_name()).into());
 
-        console::log_1(&format!("Connecting to {} at {}", network.display_name(), url).into());
-
-        let agent = Agent::builder()
-            .with_url(url)
-            .build()
-            .map_err(|e| format!("Failed to create agent: {:?}", e))?;
-
-        if network == Network::Local {
-            agent
-                .fetch_root_key()
-                .await
-                .map_err(|e| format!("Failed to fetch root key: {:?}", e))?;
-        }
-
-        let canister_id = Principal::from_text(canister_id_str)
-            .map_err(|e| format!("Invalid canister ID: {:?}", e))?;
+        let window = window().ok_or("No window object")?;
+        let storage = window.local_storage()
+            .map_err(|_| "Failed to get local storage")?
+            .ok_or("Local storage not available")?;
 
         Ok(Self {
-            agent,
-            canister_id,
             network,
+            storage,
         })
     }
 
+    fn get_todos_key(&self) -> String {
+        format!("todos_{}", self.network.display_name().to_lowercase())
+    }
+
+    fn get_next_id(&self) -> u64 {
+        let key = format!("next_id_{}", self.network.display_name().to_lowercase());
+        let current_id = self.storage.get_item(&key)
+            .unwrap_or(None)
+            .and_then(|s| s.parse::<u64>().ok())
+            .unwrap_or(1);
+        
+        let next_id = current_id + 1;
+        let _ = self.storage.set_item(&key, &next_id.to_string());
+        current_id
+    }
+
+    fn get_all_todos_from_storage(&self) -> Vec<Todo> {
+        let key = self.get_todos_key();
+        self.storage.get_item(&key)
+            .unwrap_or(None)
+            .and_then(|json_str| serde_json::from_str(&json_str).ok())
+            .unwrap_or_default()
+    }
+
+    fn save_todos_to_storage(&self, todos: &[Todo]) -> Result<(), String> {
+        let key = self.get_todos_key();
+        let json_str = serde_json::to_string(todos)
+            .map_err(|e| format!("Failed to serialize todos: {:?}", e))?;
+        
+        self.storage.set_item(&key, &json_str)
+            .map_err(|_| "Failed to save to local storage".to_string())
+    }
+
     pub async fn add_todo(&self, text: String) -> Result<Todo, String> {
-        let input = CreateTodoInput { text };
-        let args = encode_args((input,)).map_err(|e| format!("Encoding error: {:?}", e))?;
-
-        let response = self.agent
-            .update(&self.canister_id, "add_todo")
-            .with_arg(args)
-            .call_and_wait()
-            .await
-            .map_err(|e| format!("Call failed: {:?}", e))?;
-
-        let (result,): (TodoResult,) = decode_args(&response)
-            .map_err(|e| format!("Decoding error: {:?}", e))?;
-
-        match result {
-            TodoResult::Ok(todo) => Ok(todo),
-            TodoResult::Err(err) => Err(err),
-        }
+        let mut todos = self.get_all_todos_from_storage();
+        let now = js_sys::Date::now() as u64;
+        
+        let new_todo = Todo {
+            id: self.get_next_id(),
+            text,
+            completed: false,
+            created_at: now,
+            updated_at: now,
+        };
+        
+        todos.push(new_todo.clone());
+        self.save_todos_to_storage(&todos)?;
+        
+        Ok(new_todo)
     }
 
     pub async fn get_all_todos(&self, offset: u64, limit: u64) -> Result<TodosPage, String> {
-        let pagination = PaginationInput { offset, limit };
-        let args = encode_args((pagination,)).map_err(|e| format!("Encoding error: {:?}", e))?;
-
-        let response = self.agent
-            .query(&self.canister_id, "get_all_todos")
-            .with_arg(args)
-            .call()
-            .await
-            .map_err(|e| format!("Query failed: {:?}", e))?;
-
-        let (result,): (TodosResult,) = decode_args(&response)
-            .map_err(|e| format!("Decoding error: {:?}", e))?;
-
-        match result {
-            TodosResult::Ok(page) => Ok(page),
-            TodosResult::Err(err) => Err(err),
-        }
+        let todos = self.get_all_todos_from_storage();
+        let total_count = todos.len() as u64;
+        
+        let start = offset as usize;
+        let end = std::cmp::min(start + limit as usize, todos.len());
+        
+        let page_todos = if start < todos.len() {
+            todos[start..end].to_vec()
+        } else {
+            Vec::new()
+        };
+        
+        let has_more = end < todos.len();
+        
+        Ok(TodosPage {
+            todos: page_todos,
+            total_count,
+            has_more,
+        })
     }
 
     pub async fn update_todo_completed(&self, id: u64, completed: bool) -> Result<Todo, String> {
-        let args = encode_args((id, completed)).map_err(|e| format!("Encoding error: {:?}", e))?;
-
-        let response = self.agent
-            .update(&self.canister_id, "update_todo_completed")
-            .with_arg(args)
-            .call_and_wait()
-            .await
-            .map_err(|e| format!("Call failed: {:?}", e))?;
-
-        let (result,): (TodoResult,) = decode_args(&response)
-            .map_err(|e| format!("Decoding error: {:?}", e))?;
-
-        match result {
-            TodoResult::Ok(todo) => Ok(todo),
-            TodoResult::Err(err) => Err(err),
+        let mut todos = self.get_all_todos_from_storage();
+        
+        if let Some(todo) = todos.iter_mut().find(|t| t.id == id) {
+            todo.completed = completed;
+            todo.updated_at = js_sys::Date::now() as u64;
+            let updated_todo = todo.clone();
+            self.save_todos_to_storage(&todos)?;
+            Ok(updated_todo)
+        } else {
+            Err("Todo not found".to_string())
         }
     }
 
     pub async fn delete_todo(&self, id: u64) -> Result<bool, String> {
-        let args = encode_args((id,)).map_err(|e| format!("Encoding error: {:?}", e))?;
-
-        let response = self.agent
-            .update(&self.canister_id, "delete_todo")
-            .with_arg(args)
-            .call_and_wait()
-            .await
-            .map_err(|e| format!("Call failed: {:?}", e))?;
-
-        let (result,): (DeleteResult,) = decode_args(&response)
-            .map_err(|e| format!("Decoding error: {:?}", e))?;
-
-        match result {
-            DeleteResult::Ok(success) => Ok(success),
-            DeleteResult::Err(err) => Err(err),
+        let mut todos = self.get_all_todos_from_storage();
+        let initial_len = todos.len();
+        
+        todos.retain(|t| t.id != id);
+        
+        if todos.len() < initial_len {
+            self.save_todos_to_storage(&todos)?;
+            Ok(true)
+        } else {
+            Ok(false)
         }
     }
 
     pub async fn get_todo_count(&self) -> Result<u64, String> {
-        let response = self.agent
-            .query(&self.canister_id, "get_todo_count")
-            .with_arg(encode_args(()).unwrap())
-            .call()
-            .await
-            .map_err(|e| format!("Query failed: {:?}", e))?;
-
-        let (count,): (u64,) = decode_args(&response)
-            .map_err(|e| format!("Decoding error: {:?}", e))?;
-
-        Ok(count)
+        let todos = self.get_all_todos_from_storage();
+        Ok(todos.len() as u64)
     }
 }

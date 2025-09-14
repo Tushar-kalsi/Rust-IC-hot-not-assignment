@@ -7,7 +7,7 @@ use crate::types::Network;
 pub fn App() -> impl IntoView {
     provide_meta_context();
 
-    let (current_network, set_current_network) = create_signal(Network::Testnet);
+    let (current_network, set_current_network) = create_signal(Network::Local);
     let (refresh_trigger, set_refresh_trigger) = create_signal(false);
 
     view! {
@@ -49,7 +49,7 @@ pub fn App() -> impl IntoView {
             <footer class="app-footer">
                 <p>"Built with "
                     <span class="heart">"❤️"</span>
-                    " using Leptos + Internet Computer"
+                    " using Leptos + Internet Computer By Tushar kalsi"
                 </p>
             </footer>
         </div>

@@ -33,7 +33,7 @@ pub fn TodoForm(
                     match client.add_todo(text).await {
                         Ok(_) => {
                             set_todo_text.set(String::new());
-                            on_todo_added.set(!on_todo_added.get()); // Trigger refresh
+                            on_todo_added.update(|val| *val = !*val); // Trigger refresh
                             if let Some(input) = input_ref.get() {
                                 let _ = input.focus();
                             }
@@ -58,7 +58,7 @@ pub fn TodoForm(
 
     let on_keypress = move |ev: web_sys::KeyboardEvent| {
         if ev.key() == "Enter" && !is_loading.get() {
-            add_todo(ev.into());
+            add_todo(web_sys::MouseEvent::new("click").unwrap());
         }
     };
 

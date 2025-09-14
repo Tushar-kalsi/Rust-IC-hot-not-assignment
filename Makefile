@@ -31,7 +31,7 @@ build: build-backend build-frontend
 build-backend:
 	@dfx build todo_ic_backend
 
-build-frontend: install-frontend-deps
+build-frontend: build-backend install-frontend-deps
 	@echo "Building Leptos frontend..."
 	@cd $(FRONTEND_DIR) && trunk build --release
 	@echo "Frontend build completed!"
