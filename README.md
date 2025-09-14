@@ -124,7 +124,20 @@ todo_ic/
    make serve-frontend
    ```
 
-4. **Test API Commands**:
+4. **Complete Development Server**:
+   ```bash
+   # Launch complete development environment (backend + frontend)
+   # This command will:
+   # 1. Set up local IC replica
+   # 2. Create and deploy backend canister
+   # 3. Start frontend development server with hot reload
+   make serve
+   
+   # Access the application at: http://127.0.0.1:8080
+   # Backend Candid UI will be available at the URL shown in terminal output
+   ```
+
+5. **Test API Commands**:
    ```bash
    # Add a todo
    dfx canister call todo_ic_backend add_todo '(record { text = "Learn IC development" })'

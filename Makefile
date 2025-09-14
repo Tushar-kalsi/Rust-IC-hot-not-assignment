@@ -26,7 +26,7 @@ help:
 	@echo "  make start (start local replica)"
 	@echo "  make stop (stop local replica)"
 
-build: build-backend build-frontend
+serve: setup-local serve-frontend
 
 build-backend:
 	@dfx build todo_ic_backend
