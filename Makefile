@@ -5,6 +5,8 @@ FRONTEND_DIR = src/todo_ic_frontend
 
 help:
 	@echo "Available commands:"
+	@echo "Setup:"
+	@echo "  make setup-local (all-in-one: stop, start, create, build)"
 	@echo "Backend:"
 	@echo "  make build-backend"
 	@echo "  make test"
@@ -58,6 +60,19 @@ lint:
 
 fmt:
 	@cd $(BACKEND_DIR) && cargo fmt
+
+setup-local: stop
+	@echo "Setting up local development environment..."
+	@echo "1. Stopping any existing DFX processes..."
+	@pkill -f dfx 2>/dev/null || true
+	@echo "2. Starting DFX local replica..."
+	@dfx start --clean --background
+	@echo "3. Creating local canister..."
+	@dfx canister create todo_ic_backend
+	@echo "4. Building backend..."
+	@dfx build todo_ic_backend
+	@echo "✅ Local development environment ready!"
+	@echo "Canister ID: $$(dfx canister id todo_ic_backend)"
 
 start:
 	@dfx start --clean --background

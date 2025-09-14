@@ -2,6 +2,22 @@
 
 A simple todo list canister for the Internet Computer built with Rust.
 
+## Quick Start
+
+Get your local development environment ready with one command:
+
+```bash
+make setup-local
+```
+
+This command will:
+1. Stop any existing DFX processes
+2. Start DFX local replica with clean state
+3. Create local canister
+4. Build the backend
+
+Your canister will be ready for testing and deployment!
+
 ## Project Structure
 
 ```
