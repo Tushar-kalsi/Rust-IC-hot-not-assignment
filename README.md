@@ -4,6 +4,7 @@ A simple todo list canister for the Internet Computer built with Rust.
 
 ## Quick Start
 
+### Local Development
 Get your local development environment ready with one command:
 
 ```bash
@@ -16,6 +17,21 @@ This command will:
 3. Create local canister
 4. Build the backend
 5. Deploy the canister
+
+### Testnet Deployment
+Deploy to IC Playground testnet with one command:
+
+```bash
+make setup-testnet
+```
+
+This command will:
+1. Check your cycles balance
+2. Create testnet canister
+3. Build the backend
+4. Deploy to testnet
+
+**Note:** You need cycles from the [DFINITY faucet](https://faucet.dfinity.org/) before running testnet setup.
 
 Your canister will be ready for testing with API endpoints available!
 

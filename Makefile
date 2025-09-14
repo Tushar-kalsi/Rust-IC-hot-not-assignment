@@ -7,6 +7,7 @@ help:
 	@echo "Available commands:"
 	@echo "Setup:"
 	@echo "  make setup-local (all-in-one: stop, start, create, build, deploy)"
+	@echo "  make setup-testnet (all-in-one: check cycles, create, build, deploy)"
 	@echo "Backend:"
 	@echo "  make build-backend"
 	@echo "  make test"
@@ -76,6 +77,21 @@ setup-local: stop
 	@echo "✅ Local development environment ready!"
 	@echo "Canister ID: $$(dfx canister id todo_ic_backend)"
 	@echo "Candid UI: http://127.0.0.1:4943/?canisterId=$$(dfx canister id __Candid_UI)&id=$$(dfx canister id todo_ic_backend)"
+
+setup-testnet:
+	@echo "Setting up testnet development environment..."
+	@echo "1. Checking cycles balance..."
+	@dfx cycles balance --network playground || echo "No cycles found"
+	@echo "2. Creating testnet canister..."
+	@dfx canister create todo_ic_backend --network playground
+	@echo "3. Building backend..."
+	@dfx build todo_ic_backend
+	@echo "4. Deploying to testnet..."
+	@dfx deploy todo_ic_backend --network playground
+	@echo "✅ Testnet development environment ready!"
+	@echo "Canister ID: $$(dfx canister id todo_ic_backend --network playground)"
+	@echo "Direct URL: https://$$(dfx canister id todo_ic_backend --network playground).icp0.io"
+	@echo "Candid UI: https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=$$(dfx canister id todo_ic_backend --network playground)"
 
 start:
 	@dfx start --clean --background
