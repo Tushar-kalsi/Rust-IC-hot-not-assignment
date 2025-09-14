@@ -6,7 +6,7 @@ FRONTEND_DIR = src/todo_ic_frontend
 help:
 	@echo "Available commands:"
 	@echo "Setup:"
-	@echo "  make setup-local (all-in-one: stop, start, create, build)"
+	@echo "  make setup-local (all-in-one: stop, start, create, build, deploy)"
 	@echo "Backend:"
 	@echo "  make build-backend"
 	@echo "  make test"
@@ -71,8 +71,11 @@ setup-local: stop
 	@dfx canister create todo_ic_backend
 	@echo "4. Building backend..."
 	@dfx build todo_ic_backend
+	@echo "5. Deploying canister..."
+	@dfx deploy todo_ic_backend
 	@echo "✅ Local development environment ready!"
 	@echo "Canister ID: $$(dfx canister id todo_ic_backend)"
+	@echo "Candid UI: http://127.0.0.1:4943/?canisterId=$$(dfx canister id __Candid_UI)&id=$$(dfx canister id todo_ic_backend)"
 
 start:
 	@dfx start --clean --background

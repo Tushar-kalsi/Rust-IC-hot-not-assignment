@@ -15,8 +15,9 @@ This command will:
 2. Start DFX local replica with clean state
 3. Create local canister
 4. Build the backend
+5. Deploy the canister
 
-Your canister will be ready for testing and deployment!
+Your canister will be ready for testing with API endpoints available!
 
 ## Project Structure
 
