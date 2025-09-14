@@ -100,6 +100,9 @@ todo_ic/
    # Install Rust
    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
    rustup target add wasm32-unknown-unknown
+   
+   # Install Trunk (for frontend builds)
+   cargo install trunk
    ```
 
 2. **Local Development**:
@@ -108,7 +111,20 @@ todo_ic/
    make setup-local
    ```
 
-3. **Test API Commands**:
+3. **Building Frontend + Backend**:
+   ```bash
+   # Build both backend and frontend (backend builds first, then frontend)
+   make build
+   
+   # Or build individually:
+   make build-backend    # Build only backend canister
+   make build-frontend   # Build only frontend (automatically builds backend first)
+   
+   # Serve frontend development server with hot reload
+   make serve-frontend
+   ```
+
+4. **Test API Commands**:
    ```bash
    # Add a todo
    dfx canister call todo_ic_backend add_todo '(record { text = "Learn IC development" })'
