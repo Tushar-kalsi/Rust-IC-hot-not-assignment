@@ -1,5 +1,11 @@
 [workspace]
-members = [
-    "src/todo_ic_backend"
-]
+members = ["src/todo_ic_backend", "src/todo_ic_frontend"]
 resolver = "2"
+
+[workspace.dependencies]
+candid = "0.10"
+ic-cdk = "0.13"
+ic-cdk-macros = "0.9"
+ic-stable-structures = "0.6"
+serde = { version = "1.0", features = ["derive"] }
+

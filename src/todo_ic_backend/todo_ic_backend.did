@@ -1,3 +1,55 @@
+type TodoId = nat64;
+
+type Todo = record {
+    id: TodoId;
+    text: text;
+    completed: bool;
+    created_at: nat64;
+    updated_at: nat64;
+};
+
+type CreateTodoInput = record {
+    text: text;
+};
+
+type UpdateTodoInput = record {
+    id: TodoId;
+    text: opt text;
+    completed: opt bool;
+};
+
+type PaginationInput = record {
+    offset: nat64;
+    limit: nat64;
+};
+
+type TodosPage = record {
+    todos: vec Todo;
+    total_count: nat64;
+    has_more: bool;
+};
+
+type TodoResult = variant {
+    Ok: Todo;
+    Err: text;
+};
+
+type TodosResult = variant {
+    Ok: TodosPage;
+    Err: text;
+};
+
+type DeleteResult = variant {
+    Ok: bool;
+    Err: text;
+};
+
 service : {
-    "greet": (text) -> (text) query;
+    add_todo: (CreateTodoInput) -> (TodoResult);
+    get_todo: (TodoId) -> (TodoResult) query;
+    get_all_todos: (PaginationInput) -> (TodosResult) query;
+    update_todo_text: (TodoId, text) -> (TodoResult);
+    update_todo_completed: (TodoId, bool) -> (TodoResult);
+    delete_todo: (TodoId) -> (DeleteResult);
+    get_todo_count: () -> (nat64) query;
 }

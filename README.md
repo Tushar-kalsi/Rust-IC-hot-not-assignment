@@ -1,60 +1,182 @@
-# `todo_ic`
+# Todo IC
 
-Welcome to your new `todo_ic` project and to the Internet Computer development community. By default, creating a new project adds this README and some template files to your project directory. You can edit these template files to customize your project and to include your own code to speed up the development cycle.
+A simple todo list canister for the Internet Computer built with Rust.
 
-To get started, you might want to explore the project directory structure and the default configuration file. Working with this project in your development environment will not affect any production deployment or identity tokens.
+## Project Structure
 
-To learn more before you start working with `todo_ic`, see the following documentation available online:
-
-- [Quick Start](https://internetcomputer.org/docs/current/developer-docs/setup/deploy-locally)
-- [SDK Developer Tools](https://internetcomputer.org/docs/current/developer-docs/setup/install)
-- [Rust Canister Development Guide](https://internetcomputer.org/docs/current/developer-docs/backend/rust/)
-- [ic-cdk](https://docs.rs/ic-cdk)
-- [Candid Introduction](https://internetcomputer.org/docs/building-apps/interact-with-canisters/candid/candid-concepts)
-
-If you want to start working on your project right away, you might want to try the following commands:
-
-```bash
-cd todo_ic/
-dfx help
-dfx canister --help
+```
+todo_ic/
+├── Makefile                 # Build and deployment automation
+├── dfx.json                 # DFX configuration
+├── Cargo.toml               # Workspace configuration
+└── src/
+    ├── todo_ic_backend/     # Backend canister
+    │   ├── Cargo.toml       # Backend dependencies
+    │   ├── todo_ic_backend.did  # Candid interface definition
+    │   ├── src/
+    │   │   ├── lib.rs       # Main canister entry points
+    │   │   ├── types.rs     # Data structures and type definitions
+    │   │   ├── storage.rs   # Stable storage implementation
+    │   │   └── service.rs   # Business logic and validation
+    │   └── tests/
+    │       └── integration_test.rs  # Comprehensive test suite
+    └── todo_ic_frontend/    # Frontend placeholder
+        └── src/
+            └── main.rs      # Simple frontend stub
 ```
 
-## Running the project locally
+### Key Components
 
-If you want to test your project locally, you can use the following commands:
+#### Backend (`src/todo_ic_backend/`)
+
+- **lib.rs**: Main canister file that defines the public API endpoints using IC CDK macros (`#[query]`, `#[update]`)
+- **types.rs**: Contains all data structures including `Todo`, input/output types, and implements `Storable` trait for stable storage
+- **storage.rs**: Manages stable storage using `StableBTreeMap` for persistent data across canister upgrades
+- **service.rs**: Business logic layer with validation functions and CRUD operations
+- **todo_ic_backend.did**: Candid interface definition for external API interaction
+
+## API Endpoints
+
+| Method | Type | Description |
+|--------|------|-------------|
+| `add_todo(CreateTodoInput)` | Update | Create a new todo item |
+| `get_todo(TodoId)` | Query | Retrieve a specific todo by ID |
+| `get_all_todos(PaginationInput)` | Query | Get paginated list of todos |
+| `update_todo_text(TodoId, text)` | Update | Update todo text content |
+| `update_todo_completed(TodoId, bool)` | Update | Mark todo as complete/incomplete |
+| `delete_todo(TodoId)` | Update | Delete a todo item |
+| `get_todo_count()` | Query | Get total number of todos |
+
+## Makefile Commands
+
+The project includes a Makefile with the following commands:
+
+### Development Commands
 
 ```bash
-# Starts the replica, running in the background
-dfx start --background
-
-# Deploys your canisters to the replica and generates your candid interface
-dfx deploy
+make help          # Show available commands
+make build         # Build the backend canister
+make test          # Run all Rust tests
+make lint          # Run Clippy linter for code quality
+make fmt           # Format code using rustfmt
 ```
 
-Once the job completes, your application will be available at `http://localhost:4943?canisterId={asset_canister_id}`.
-
-If you have made changes to your backend canister, you can generate a new candid interface with
+### Local Development
 
 ```bash
-npm run generate
+make start         # Start DFX replica in background
+make deploy        # Build and deploy canister locally
+make test-api      # Test API endpoints with sample data
+make stop          # Stop the local DFX replica
+make clean         # Clean build artifacts and local state
 ```
 
-at any time. This is recommended before starting the frontend development server, and will be run automatically any time you run `dfx deploy`.
-
-If you are making frontend changes, you can start a development server with
+### Mainnet Deployment
 
 ```bash
-npm start
+make deploy-mainnet    # Deploy to Internet Computer mainnet
 ```
 
-Which will start a server at `http://localhost:8080`, proxying API requests to the replica at port 4943.
+### Example Workflow
 
-### Note on frontend environment variables
+```bash
+# Start development
+make start
+make deploy
 
-If you are hosting frontend code somewhere without using DFX, you may need to make one of the following adjustments to ensure your project does not fetch the root key in production:
+# Test the API
+make test-api
 
-- set`DFX_NETWORK` to `ic` if you are using Webpack
-- use your own preferred method to replace `process.env.DFX_NETWORK` in the autogenerated declarations
-  - Setting `canisters -> {asset_canister_id} -> declarations -> env_override to a string` in `dfx.json` will replace `process.env.DFX_NETWORK` with the string in the autogenerated declarations
-- Write your own `createActor` constructor
+# Run tests
+make test
+
+# Clean up
+make stop
+make clean
+```
+
+## Setup and Usage
+
+1. **Prerequisites**:
+   ```bash
+   # Install DFX
+   sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
+
+   # Install Rust
+   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+   rustup target add wasm32-unknown-unknown
+   ```
+
+2. **Local Development**:
+   ```bash
+   make start
+   make deploy
+   ```
+
+3. **Test the API**:
+   ```bash
+   # Add a todo
+   dfx canister call todo_ic_backend add_todo '(record { text = "Learn IC development" })'
+
+   # Get all todos
+   dfx canister call todo_ic_backend get_all_todos '(record { offset = 0; limit = 10 })'
+
+   # Update completion status
+   dfx canister call todo_ic_backend update_todo_completed '(1, true)'
+   ```
+
+## Testnet Deployment
+
+The canister is deployed on IC Playground (testnet) for public testing:
+
+**Testnet Canister ID**: `25x2w-paaaa-aaaab-qackq-cai`
+**Candid UI**: https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=25x2w-paaaa-aaaab-qackq-cai
+
+### Testing with DFX CLI
+
+```bash
+# Add a todo
+dfx canister call 25x2w-paaaa-aaaab-qackq-cai add_todo '(record { text = "Test from CLI" })' --network playground
+
+# Get all todos
+dfx canister call 25x2w-paaaa-aaaab-qackq-cai get_all_todos '(record { offset = 0; limit = 10 })' --network playground
+
+# Get todo count
+dfx canister call 25x2w-paaaa-aaaab-qackq-cai get_todo_count '()' --network playground
+```
+
+## Mainnet Deployment
+
+**Mainnet Principal ID**: `vyggl-hpuoy-22jqe-6povn-6glf6-z2rle-wgphx-nyv6a-xbomq-e6knd-iae`
+
+To deploy to mainnet:
+1. Fund the principal with ICP tokens
+2. Convert ICP to cycles: `dfx cycles convert <amount>`
+3. Deploy: `make deploy-mainnet`
+
+## Features
+
+- **Persistent Storage**: Uses `StableBTreeMap` for upgrade-safe data persistence
+- **Pagination**: Efficient handling of large todo lists
+- **Input Validation**: Comprehensive validation with proper error handling
+- **Timestamps**: Automatic creation and update timestamps
+- **Type Safety**: Full Rust type system with Candid integration
+- **Comprehensive Testing**: Full test coverage for all CRUD operations
+
+## Technical Details
+
+### Storage Implementation
+- Uses IC stable structures for persistent storage across canister upgrades
+- `TodoStorage`: Maps `TodoId` to `Todo` objects
+- `IdStorage`: Manages auto-incrementing ID counter
+- Memory management with separate virtual memory regions
+
+### Data Types
+- `TodoId`: 64-bit unsigned integer identifier
+- `Todo`: Main todo structure with id, text, completion status, and timestamps
+- Result types for proper error handling (`TodoResult`, `TodosResult`, `DeleteResult`)
+
+### Validation Rules
+- Todo text: 1-1000 characters, non-empty after trimming
+- Pagination: limit 1-100, offset >= 0
+- Proper error messages for all validation failures

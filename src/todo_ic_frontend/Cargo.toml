@@ -1,0 +1,9 @@
+[package]
+name = "todo_ic_frontend"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+leptos = "0.8.8"
+leptos_meta = "0.8.5"
+leptos_router = "0.8.6"
